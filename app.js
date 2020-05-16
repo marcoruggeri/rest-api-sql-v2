@@ -3,6 +3,10 @@
 // load modules
 const express = require('express');
 const morgan = require('morgan');
+const sequelize = require('./models').sequelize;
+
+const users = require('./routes/users');
+const courses = require('./routes/courses');
 
 // variable to enable global error logging
 const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'true';
@@ -10,10 +14,26 @@ const enableGlobalErrorLogging = process.env.ENABLE_GLOBAL_ERROR_LOGGING === 'tr
 // create the Express app
 const app = express();
 
+// Setup request body JSON parsing.
+app.use(express.json());
+
 // setup morgan which gives us http request logging
 app.use(morgan('dev'));
 
+// test the database connection
+const testConnection = async () => {
+  try {
+    await sequelize.authenticate();
+    console.log('Connection has been established successfully.');
+  } catch (error) {
+    console.error('Unable to connect to the database:', error);
+  }
+};
+testConnection();
+
 // TODO setup your api routes here
+app.use('/api', users);
+app.use('/api', courses);
 
 // setup a friendly greeting for the root route
 app.get('/', (req, res) => {
